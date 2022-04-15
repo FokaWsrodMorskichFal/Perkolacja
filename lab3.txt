@@ -1,0 +1,70 @@
+double prob_dist(double *x, double *params){
+	if((x[0]>=0) && (x[0]<=1) && (x[1]>=0) && (x[1]<=1)){
+		return params[0]*(x[0]-params[1]*pow(x[0], 2))*pow(x[1], params[2]);
+	}else{
+		return 0;	
+	}
+}
+
+void lab3(){
+	TF2 *f1=new TF2("f1", prob_dist, 0, 1, 0, 1, 3); 
+	f1->SetTitle("f(x, y);Os x;Os y;os Z");
+	f1->GetXaxis()->SetTitleOffset(5);
+	f1->GetYaxis()->SetTitleOffset(2);
+	f1->GetXaxis()->SetTitleSize(10);
+	f1->SetParameters(1, 1, 2);
+	cout<<"stała norm: "<<1/(f1->Integral(0,1,0,1))<<endl;
+	double norm=1/(f1->Integral(0,1,0,1));
+	f1->SetParameters(norm, 1, 2);
+	TCanvas *can = new TCanvas("can", "wykres", 600, 600);
+	can->Divide(2, 2);
+	can->cd(1);
+	f1->Draw("lego");
+	//Dystrybuanta
+	can->cd(2);
+	TH2D *hist=new TH2D("hist", "hist", 10, 0, 1, 10, 0, 1);
+	hist->SetTitle("Dystrybuanta;os X;os Y;F(x, y)");	
+	double integral;	
+
+	for(int i=1;i<11;i++){
+		for(int j=1;j<11;j++){
+			integral=f1->Integral(0, (float)i/10, 0, (float)j/10);			
+			hist->SetBinContent(i, j, integral);	
+		}
+	}
+	hist->Draw("surf1");
+
+	//brzegowe h(y)
+	double tabx[10];
+	double taby[10];
+	for(int i=0;i<10;i++){
+		tabx[i]=i*0.1+0.05;
+	}
+	for(int i=0;i<10;i++){
+		taby[i]=f1->Integral(0, 1, i*0.1, (i+1)*0.1);
+	}
+	can->cd(3);
+	TGraph *graph1 = new TGraph(10, tabx, taby);
+	graph1->SetTitle("wykres brzegowy Y;os x;os y");
+	graph1->Draw("AB1");
+	
+	//brzegowe g(x)
+	double tabx[10];
+	double taby[10];
+	for(int i=0;i<10;i++){
+		tabx[i]=i*0.1+0.05;
+	}
+	for(int i=0;i<10;i++){
+		taby[i]=f1->Integral(i*0.1, (i+1)*0.1,0, 1);
+	}
+	can->cd(4);
+	TGraph *graph2 = new TGraph(10, tabx, taby);
+	graph2->SetTitle("wykres brzegowy X;os x;os y");
+	graph2->GetXaxis()->SetTitleSize(10);
+	graph2->Draw("AB1");
+	
+
+}
+
+
+
